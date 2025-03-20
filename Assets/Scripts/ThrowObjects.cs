@@ -3,23 +3,19 @@ using UnityEngine;
 public class ThirdPersonThrow : MonoBehaviour
 {
     [Header("References")]
-    public Transform cam;               // The main camera or follow camera
-    public Transform throwAttackPoint;  // The point from which the object is thrown
-    public GameObject objectToThrow;    // The prefab of the object to throw
+    public Transform cam;
+    public Transform throwAttackPoint;
+    public GameObject objectToThrow;
+    public Animator animator;  // Reference to Animator
 
     [Header("Settings")]
-    public int totalThrows = 5;         // Total number of throwable objects
-    public float throwCooldown = 0.5f;  // Cooldown between throws
-    public float throwForce = 20f;      // Forward force applied to the thrown object
-    public float throwUpwardForce = 5f; // Upward force for a throwing arc
+    public int totalThrows = 5;
+    public float throwCooldown = 0.5f;
+    public float throwForce = 20f;
+    public float throwUpwardForce = 5f;
     public KeyCode throwKey = KeyCode.Mouse0;
 
     private bool readyToThrow = true;
-
-    private void Start()
-    {
-        readyToThrow = true;
-    }
 
     private void Update()
     {
@@ -34,22 +30,22 @@ public class ThirdPersonThrow : MonoBehaviour
     {
         readyToThrow = false;
 
-        // Create the throwable object at the attack point
+        // Play throwing animation with the new trigger name
+        animator.SetTrigger("Frisbee Throw");
+
+        // Create the throwable object
         GameObject projectile = Instantiate(objectToThrow, throwAttackPoint.position, throwAttackPoint.rotation);
         Rigidbody projectileRb = projectile.GetComponent<Rigidbody>();
 
-        // Calculate throw direction based on camera forward and attack point
+        // Calculate throw direction
         Vector3 throwDirection = cam.forward;
         RaycastHit hit;
-
-        int layerMask = ~LayerMask.GetMask("Player"); // Invert mask to ignore "Player" layer
-        if (Physics.Raycast(cam.position, cam.forward, out hit, 100f, layerMask))
+        if (Physics.Raycast(cam.position, cam.forward, out hit, 100f))
         {
             throwDirection = (hit.point - throwAttackPoint.position).normalized;
         }
 
-
-        // Combine forward and upward forces for a throwing arc
+        // Apply force
         Vector3 forceToAdd = throwDirection * throwForce + Vector3.up * throwUpwardForce;
         projectileRb.AddForce(forceToAdd, ForceMode.Impulse);
 
@@ -60,5 +56,9 @@ public class ThirdPersonThrow : MonoBehaviour
     private void ResetThrow()
     {
         readyToThrow = true;
+        animator.ResetTrigger("Frisbee Throw");
+        animator.SetTrigger("Idle");
     }
+
 }
+

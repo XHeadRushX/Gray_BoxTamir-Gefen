@@ -2771,11 +2771,17 @@ MonoBehaviour:
   cam: {fileID: 548436555}
   throwAttackPoint: {fileID: 377755875}
   objectToThrow: {fileID: 491448892}
+  animator: {fileID: 641784941}
   totalThrows: 50
   throwCooldown: 0.5
   throwForce: 20
   throwUpwardForce: 5
   throwKey: 323
+--- !u!95 &641784941 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5777780407979046064, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
+  m_PrefabInstance: {fileID: 85252793}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &642852147
 PrefabInstance:
   m_ObjectHideFlags: 0

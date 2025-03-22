@@ -1544,7 +1544,7 @@ GameObject:
   - component: {fileID: 399534997}
   m_Layer: 0
   m_Name: Tamirs_cube
-  m_TagString: Untagged
+  m_TagString: Throwable
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -2877,19 +2877,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cam: {fileID: 548436555}
-  throwAttackPoint: {fileID: 377755875}
+  attckPoint: {fileID: 0}
   objectToThrow: {fileID: 491448892}
-  animator: {fileID: 641784941}
-  totalThrows: 50
+  totalThrow: 0
   throwCooldown: 0.5
+  pickUpRange: 3
+  pickUpLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  throwKey: 323
+  pickUpKey: 101
   throwForce: 20
   throwUpwardForce: 5
-  throwKey: 323
---- !u!95 &641784941 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 5777780407979046064, guid: c708a3b79cd542b42bbfedb17e213bc1, type: 3}
-  m_PrefabInstance: {fileID: 85252793}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &642852147
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -7935,17 +7934,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: objecttothrow
       objectReference: {fileID: 0}
+    - target: {fileID: 8253676409731486830, guid: 85d5768c6ab272a4e8579135d3e7e8e6, type: 3}
+      propertyPath: m_TagString
+      value: Throwable
+      objectReference: {fileID: 0}
     - target: {fileID: 9069297246375916313, guid: 85d5768c6ab272a4e8579135d3e7e8e6, type: 3}
       propertyPath: m_LocalPosition.x
       value: 3.417
       objectReference: {fileID: 0}
     - target: {fileID: 9069297246375916313, guid: 85d5768c6ab272a4e8579135d3e7e8e6, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -7.642
+      value: -8.88
       objectReference: {fileID: 0}
     - target: {fileID: 9069297246375916313, guid: 85d5768c6ab272a4e8579135d3e7e8e6, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -19.63
+      value: -18.283
       objectReference: {fileID: 0}
     - target: {fileID: 9069297246375916313, guid: 85d5768c6ab272a4e8579135d3e7e8e6, type: 3}
       propertyPath: m_LocalRotation.w

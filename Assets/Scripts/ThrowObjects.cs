@@ -1,64 +1,101 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
-public class ThirdPersonThrow : MonoBehaviour
+public class ThrowObjects : MonoBehaviour
 {
     [Header("References")]
     public Transform cam;
-    public Transform throwAttackPoint;
+    public Transform attckPoint;
     public GameObject objectToThrow;
-    public Animator animator;  // Reference to Animator
 
     [Header("Settings")]
-    public int totalThrows = 5;
-    public float throwCooldown = 0.5f;
-    public float throwForce = 20f;
-    public float throwUpwardForce = 5f;
-    public KeyCode throwKey = KeyCode.Mouse0;
+    public int totalThrow;
+    public float throwCooldown;
+    public float pickUpRange = 3f;
+    public LayerMask pickUpLayer;
 
-    private bool readyToThrow = true;
+    [Header("Throwing")]
+    public KeyCode throwKey = KeyCode.Mouse0;
+    public KeyCode pickUpKey = KeyCode.E;
+    public float throwForce;
+    public float throwUpwardForce;
+
+    private bool readyToThrow;
+    private Animator animator;
+
+    private void Start()
+    {
+        readyToThrow = true;
+        animator = GetComponent<Animator>();
+    }
 
     private void Update()
     {
-        // Check for throw input and cooldown
-        if (Input.GetKeyDown(throwKey) && readyToThrow && totalThrows > 0)
+        // Throwing
+        if (Input.GetKeyDown(throwKey) && readyToThrow && totalThrow > 0)
         {
-            ThrowObject();
+            Throw();
+        }
+
+        // Picking up throwable objects
+        if (Input.GetKeyDown(pickUpKey))
+        {
+            PickUpObject();
         }
     }
 
-    private void ThrowObject()
+    private void Throw()
     {
         readyToThrow = false;
 
-        // Play throwing animation with the new trigger name
-        animator.SetTrigger("Frisbee Throw");
+        // Animation
+        animator.SetTrigger("Throw");
 
-        // Create the throwable object
-        GameObject projectile = Instantiate(objectToThrow, throwAttackPoint.position, throwAttackPoint.rotation);
+        // Instantiate projectile
+        GameObject projectile = Instantiate(objectToThrow, attckPoint.position, cam.rotation);
         Rigidbody projectileRb = projectile.GetComponent<Rigidbody>();
 
         // Calculate throw direction
-        Vector3 throwDirection = cam.forward;
+        Vector3 forceDirection = cam.transform.forward;
         RaycastHit hit;
-        if (Physics.Raycast(cam.position, cam.forward, out hit, 100f))
+        if (Physics.Raycast(cam.position, cam.forward, out hit, 500f))
         {
-            throwDirection = (hit.point - throwAttackPoint.position).normalized;
+            forceDirection = (hit.point - attckPoint.position).normalized;
         }
 
         // Apply force
-        Vector3 forceToAdd = throwDirection * throwForce + Vector3.up * throwUpwardForce;
+        Vector3 forceToAdd = forceDirection * throwForce + transform.up * throwUpwardForce;
         projectileRb.AddForce(forceToAdd, ForceMode.Impulse);
+        totalThrow--;
 
-        totalThrows--;
+        // Reset throw
         Invoke(nameof(ResetThrow), throwCooldown);
     }
 
     private void ResetThrow()
     {
         readyToThrow = true;
-        animator.ResetTrigger("Frisbee Throw");
-        animator.SetTrigger("Idle");
     }
 
-}
+    private void PickUpObject()
+    {
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, pickUpRange, pickUpLayer);
 
+        foreach (Collider hitCollider in hitColliders)
+        {
+            if (hitCollider.CompareTag("Throwable"))
+            {
+                Destroy(hitCollider.gameObject);
+                totalThrow++;
+                Debug.Log("Picked up a throwable object!");
+                break;
+            }
+        }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, pickUpRange);
+    }
+}

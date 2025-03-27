@@ -1,101 +1,87 @@
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class ThrowObjects : MonoBehaviour
 {
     [Header("References")]
     public Transform cam;
-    public Transform attckPoint;
+    public Transform attackPoint;
     public GameObject objectToThrow;
+    public Transform player;
+    public Animator animator;
+    public CharacterController controller; // Reference to disable movement
 
     [Header("Settings")]
-    public int totalThrow;
-    public float throwCooldown;
-    public float pickUpRange = 3f;
-    public LayerMask pickUpLayer;
-
-    [Header("Throwing")]
+    public int totalThrows = 5;
+    public float throwCooldown = 1f;
+    public float throwForce = 20f;
+    public float throwUpwardForce = 5f;
     public KeyCode throwKey = KeyCode.Mouse0;
-    public KeyCode pickUpKey = KeyCode.E;
-    public float throwForce;
-    public float throwUpwardForce;
 
-    private bool readyToThrow;
-    private Animator animator;
-
-    private void Start()
-    {
-        readyToThrow = true;
-        animator = GetComponent<Animator>();
-    }
+    private bool readyToThrow = true;
+    private bool isThrowing = false;
 
     private void Update()
     {
-        // Throwing
-        if (Input.GetKeyDown(throwKey) && readyToThrow && totalThrow > 0)
+        if (Input.GetKeyDown(throwKey) && readyToThrow && totalThrows > 0)
         {
             Throw();
-        }
-
-        // Picking up throwable objects
-        if (Input.GetKeyDown(pickUpKey))
-        {
-            PickUpObject();
         }
     }
 
     private void Throw()
     {
         readyToThrow = false;
+        isThrowing = true;
 
-        // Animation
-        animator.SetTrigger("Throw");
+        // Rotate player to match camera direction
+        AlignWithCamera();
 
-        // Instantiate projectile
-        GameObject projectile = Instantiate(objectToThrow, attckPoint.position, cam.rotation);
+        // Disable movement
+        if (controller != null)
+            controller.enabled = false;
+
+        // Play throw animation
+        if (animator != null)
+            animator.SetTrigger("Throw");
+
+        // Instantiate and throw the object
+        GameObject projectile = Instantiate(objectToThrow, attackPoint.position, Quaternion.identity);
         Rigidbody projectileRb = projectile.GetComponent<Rigidbody>();
 
-        // Calculate throw direction
-        Vector3 forceDirection = cam.transform.forward;
+        Vector3 forceDirection = cam.forward; // Default to camera forward direction
+
         RaycastHit hit;
         if (Physics.Raycast(cam.position, cam.forward, out hit, 500f))
         {
-            forceDirection = (hit.point - attckPoint.position).normalized;
+            forceDirection = (hit.point - attackPoint.position).normalized;
         }
 
-        // Apply force
-        Vector3 forceToAdd = forceDirection * throwForce + transform.up * throwUpwardForce;
+        Vector3 forceToAdd = forceDirection * throwForce + Vector3.up * throwUpwardForce;
         projectileRb.AddForce(forceToAdd, ForceMode.Impulse);
-        totalThrow--;
 
-        // Reset throw
+        totalThrows--;
+
+        // Invoke reset functions
         Invoke(nameof(ResetThrow), throwCooldown);
+        Invoke(nameof(ResetMovement), throwCooldown);
+    }
+
+    private void AlignWithCamera()
+    {
+        Vector3 cameraForward = cam.forward;
+        cameraForward.y = 0; // Keep rotation horizontal
+        player.rotation = Quaternion.LookRotation(cameraForward);
     }
 
     private void ResetThrow()
     {
         readyToThrow = true;
+        isThrowing = false;
     }
 
-    private void PickUpObject()
+    private void ResetMovement()
     {
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, pickUpRange, pickUpLayer);
-
-        foreach (Collider hitCollider in hitColliders)
-        {
-            if (hitCollider.CompareTag("Throwable"))
-            {
-                Destroy(hitCollider.gameObject);
-                totalThrow++;
-                Debug.Log("Picked up a throwable object!");
-                break;
-            }
-        }
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, pickUpRange);
+        if (controller != null)
+            controller.enabled = true;
     }
 }
